@@ -1,0 +1,48 @@
+from gestures import calculate_distance
+from hand_landmarks import HAND_LANDMARKS
+
+
+class GestureTimer:
+    def __init__(self, hold_seconds=2.0):
+        self.hold_seconds = hold_seconds
+        self.active_gesture = None
+        self.start_time = None
+        self.triggered = False
+
+    def update(self, gesture):
+        now = time.monotonic()
+
+        # Gesture changed or disappeared
+        if gesture != self.active_gesture:
+            self.active_gesture = gesture
+            self.start_time = now if gesture is not None else None
+            self.triggered = False
+
+            if gesture is not None:
+                print(f"Gesture detected: {gesture}")
+
+            return
+
+        # No gesture is currently active
+        if gesture is None:
+            return
+
+        # Check whether the gesture has been held long enough
+        elapsed = now - self.start_time
+
+        if elapsed >= self.hold_seconds and not self.triggered:
+            print(f"Gesture activated: {gesture}")
+            self.triggered = True
+
+
+
+
+def is_pinching(hand, width, height):
+    thumb_tip = hand[HAND_LANDMARKS["thumb"]["tip"]]
+    index_tip = hand[HAND_LANDMARKS["index"]["tip"]]
+
+    distance = calculate_distance(
+        thumb_tip, index_tip, width, height
+    )
+
+    return distance < 10
